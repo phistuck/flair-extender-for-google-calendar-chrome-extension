@@ -1,0 +1,22 @@
+{
+ "name": "Flair Extender For Google Calendar",
+ "description":
+  "Adding more flair options to the Google Calendar event flair gadget.",
+ "license": "See the LICENSE file for details.",
+ "version": "0.0.0.1",
+ "icons":
+  {
+   "16": "16.png",
+   "48": "48.png",
+   "64": "64.png",
+   "128": "128.png"
+  },
+ "content_scripts":
+  [
+   {
+    "js": ["add-flairs.js"],
+    "matches": ["*://*/*?*calendar/flair/flair.xml*"],
+    "all_frames": true
+   }
+  ]
+}
