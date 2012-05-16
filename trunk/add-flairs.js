@@ -6,7 +6,9 @@
 /*jslint nomen: false*/
 var body, width, height, title,
     customFlairs = [],
-    clickHandler = "setIcon('_flair_extender_', this.src)";
+    clickHandler = "setIcon('_flair_extender_', this.src)",
+    lastUpdate = localStorage["flair-extender-last-update-time"],
+    storedList = localStorage["flair-extender-list"];
 function areFlairsShowing()
 {
  var firstChild = body.children[0];
@@ -192,15 +194,14 @@ window.onmessage =
  };
 // We only update the flair list once a day automatically and
 // keep it within the localStorage store.
-if (localStorage["flair-extender-last-update-time"] &&
-    ((new Date()).getTime() -
-    (new Date(parseInt(localStorage["flair-extender-last-update-time"], 10)))
-     .getTime()) >
-    1000 * 60 * 60 * 24)
+if (!storedList ||
+    (lastUpdate &&
+     ((new Date()).getTime() -
+      (new Date(parseInt(lastUpdate, 10))).getTime()) > 1000 * 60 * 60 * 24))
 {
  updateFlairList();
 }
 else
 {
- customFlairs = JSON.parse(localStorage["flair-extender-list"]);
+ customFlairs = JSON.parse(storedList);
 }
