@@ -6,6 +6,8 @@
 /*jslint nomen: false*/
 var body, width, height, title,
     customFlairs = [],
+    userCustomFlairs =
+     JSON.parse(localStorage["flair-extender-custom-list"] || "[]"),
     clickHandler = "setIcon('_flair_extender_', this.src)",
     lastUpdate = localStorage["flair-extender-last-update-time"],
     storedList = localStorage["flair-extender-list"];
@@ -18,10 +20,28 @@ function areFlairsShowing()
  }
  return null;
 }
+function deleteHandler(e)
+{
+ var src, index;
+ if (e.which !== 2)
+ {
+  return;
+ }
+ e.preventDefault();
+ e.stopImmediatePropagation();
+ src = this.src;
+ index = userCustomFlairs.indexOf(src);
+ if (index !== -1 && confirm("Are you sure you want to delete this flair?"))
+ {
+  userCustomFlairs.splice(index, 1);
+  localStorage["flair-extender-custom-list"] = JSON.stringify(userCustomFlairs);
+ }
+ updateFlairList();
+}
 function addFlairs()
 {
- var i, length = body.children.length, eLabel, eFlair, event, eUpdateFlairs,
-     eUpdateLink, flairCount = customFlairs.length;
+ var i, length = body.children.length, eLabel, eFlair, event, eManageFlairs,
+     eUpdateLink, eCustomLink, flairCount = customFlairs.length;
 
  /*jslint plusplus: true*/
  for (i = 0; i < length; i++)
@@ -44,6 +64,7 @@ function addFlairs()
   eFlair.title = title;
   eFlair.className = "extension-made";
   eFlair.setAttribute("onclick", clickHandler);
+  eFlair.onmousedown = deleteHandler;
   eFlair.src = customFlairs[i];
   body.insertBefore(eFlair, eLabel);
  }
@@ -52,11 +73,17 @@ function addFlairs()
  /*jslint undef: true*/
  eUpdateLink.onclick = updateFlairList;
  /*jslint undef: false*/
- eUpdateLink.appendChild(document.createTextNode("Update custom flair list"));
- eUpdateFlairs = document.createElement("div");
- eUpdateFlairs.className = "extension-made";
- eUpdateFlairs.appendChild(eUpdateLink);
- body.insertBefore(eUpdateFlairs, eLabel);
+ eUpdateLink.appendChild(document.createTextNode("Update list"));
+ eCustomLink = document.createElement("a");
+ eCustomLink.href = "#";
+ eCustomLink.onclick = addCustomFlair;
+ eCustomLink.appendChild(document.createTextNode("Custom..."));
+ eManageFlairs = document.createElement("div");
+ eManageFlairs.className = "extension-made";
+ eManageFlairs.appendChild(eUpdateLink);
+ eManageFlairs.appendChild(document.createTextNode(" | "));
+ eManageFlairs.appendChild(eCustomLink);
+ body.insertBefore(eManageFlairs, eLabel);
  event = document.createEvent("Event");
  event.initEvent("FlairExtender.AdjustHeight", true, true);
  window.dispatchEvent(event);  
@@ -69,9 +96,14 @@ function removeExistingFlairs()
   body.removeChild(elements[0]);
  }
 }
-function updateFlairList()
+function updateFlairList(e)
 {
- var request = new XMLHttpRequest();
+ var request;
+ if (e)
+ {
+  e.preventDefault();
+ }
+ request = new XMLHttpRequest();
  request.open(
   "get",
   "//phistuck-app.appspot.com/flair-list?tmp=" + (new Date().getTime()),
@@ -94,6 +126,7 @@ function updateFlairList()
      oldCustomFlairs = customFlairs;
      customFlairs = JSON.parse(request.response)["list"];
      localStorage["flair-extender-list"] = JSON.stringify(customFlairs);
+     customFlairs = customFlairs.concat(userCustomFlairs);
     //}
     if (JSON.stringify(oldCustomFlairs) !== JSON.stringify(customFlairs) &&
         body && areFlairsShowing())
@@ -106,6 +139,23 @@ function updateFlairList()
   };
  request.send();
  return false;
+}
+function addCustomFlair(e)
+{
+ var src;
+ e.preventDefault();
+ src =
+  window.prompt(
+   "Enter the URL of your custom image (will be resized to 16x16).\n" +
+   "Middle click on a flair from the list to remove it.\n" +
+   "Note - your custom flairs will only be stored in this computer.");
+ if (!src)
+ {
+  return;
+ }
+ userCustomFlairs.push(src);
+ localStorage["flair-extender-custom-list"] = JSON.stringify(userCustomFlairs);
+ updateFlairList();
 }
 function getBody()
 {
@@ -204,4 +254,5 @@ if (!storedList ||
 else
 {
  customFlairs = JSON.parse(storedList);
+ customFlairs = customFlairs.concat(userCustomFlairs);
 }
