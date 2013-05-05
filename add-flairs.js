@@ -22,15 +22,14 @@ function areFlairsShowing()
 }
 function deleteHandler(e)
 {
- var src, index;
+ var index;
  if (e.which !== 2)
  {
   return;
  }
  e.preventDefault();
  e.stopImmediatePropagation();
- src = this.src;
- index = userCustomFlairs.indexOf(src);
+ index = userCustomFlairs.indexOf(this.dataset.source);
  if (index !== -1 && confirm("Are you sure you want to delete this flair?"))
  {
   userCustomFlairs.splice(index, 1);
@@ -65,6 +64,7 @@ function addFlairs()
   eFlair.className = "extension-made";
   eFlair.setAttribute("onclick", clickHandler);
   eFlair.onmousedown = deleteHandler;
+  eFlair.dataset.source = customFlairs[i];
   eFlair.src = customFlairs[i];
   body.insertBefore(eFlair, eLabel);
  }
